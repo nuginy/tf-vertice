@@ -9,8 +9,11 @@ jobs:
   tf_deploy:
     runs-on: ubuntu-latest
     name: Auto deploy GH Act and TF
-    steps:
+    defaults:
+      run:
+        working-directory: ./learn-terraform-aws-instance
 
+    steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
