@@ -38,6 +38,9 @@ resource "aws_instance" "app_server" {
     f_content = var.home_file_content
   })
   user_data_replace_on_change = true
+  lifecycle {
+    create_before_destroy = var.create_new_before_terminate_old
+  }
   tags = {
     Name = var.instance_name
   }

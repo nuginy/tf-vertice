@@ -39,3 +39,9 @@ variable "aws_region" {
   type = string
   default = "eu-west-1"
 }
+
+variable "create_new_before_terminate_old" {
+  description = "Allowing selection if you want to create a new instance before terminating the old one"
+  type = bool
+  default = true
+}
