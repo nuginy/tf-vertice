@@ -14,7 +14,7 @@ module "cors" {
   version = "0.3.3"
 
   api_id          = aws_api_gateway_rest_api.web_app.id
-  api_resource_id = aws_api_gateway_resource.root.id
+  api_resource_id = aws_api_gateway_rest_api.web_app.root_resource_id
   allow_methods = ["POST", "OPTIONS"]
 }
 
@@ -25,30 +25,51 @@ resource "aws_api_gateway_rest_api" "web_app" {
   }
 }
 
-resource "aws_api_gateway_resource" "root" {
-  parent_id   = aws_api_gateway_rest_api.web_app.root_resource_id
-  path_part   = var.apigw_root_path
-  rest_api_id = aws_api_gateway_rest_api.web_app.id
-  depends_on = [aws_api_gateway_rest_api.web_app]
-}
-
 resource "aws_api_gateway_method" "post" {
   authorization = var.apigw_method_auth
   http_method   = var.apigw_method_http_method
-  resource_id   = aws_api_gateway_resource.root.id
+  resource_id   = aws_api_gateway_rest_api.web_app.root_resource_id
   rest_api_id   = aws_api_gateway_rest_api.web_app.id
-  depends_on = [aws_api_gateway_resource.root]
+  depends_on = [aws_api_gateway_rest_api.web_app]
+}
+
+resource "aws_api_gateway_method_response" "post" {
+  http_method = aws_api_gateway_method.post.http_method
+  resource_id = aws_api_gateway_rest_api.web_app.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.web_app.id
+  status_code = "200"
+  response_models = {
+    "application/json" = "Empty"
+  }
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+
+  depends_on = [aws_api_gateway_method.post]
+}
+
+resource "aws_api_gateway_integration_response" "post" {
+  http_method = aws_api_gateway_method.post.http_method
+  resource_id = aws_api_gateway_rest_api.web_app.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.web_app.id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+
+  depends_on = [aws_api_gateway_method.post, aws_api_gateway_integration.lambda]
 }
 
 resource "aws_api_gateway_integration" "lambda" {
   http_method = aws_api_gateway_method.post.http_method
-  resource_id = aws_api_gateway_resource.root.id
+  resource_id = aws_api_gateway_rest_api.web_app.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.web_app.id
-  type        = "AWS_PROXY"
+  type        = "AWS"
   integration_http_method = var.apigw_method_http_method
   uri = aws_lambda_function.lambda_function.invoke_arn
 
-  depends_on = [aws_api_gateway_resource.root, aws_lambda_function.lambda_function]
+  depends_on = [aws_api_gateway_method.post, aws_lambda_function.lambda_function]
 }
 
 resource "aws_api_gateway_deployment" "web_app" {

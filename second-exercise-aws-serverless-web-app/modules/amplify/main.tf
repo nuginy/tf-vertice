@@ -23,3 +23,8 @@ resource "aws_amplify_app" "web_app" {
   tags = var.amplify_tags
   depends_on = [var.amplify_api_gw_address]
 }
+
+resource "aws_amplify_branch" "web_app" {
+  app_id      = aws_amplify_app.web_app.id
+  branch_name = "main"
+}

@@ -13,7 +13,7 @@ variable "apigw_endpoint_types" {
 variable "apigw_root_path" {
   description = "Value of the Api Gw root path"
   type = string
-  default = "{proxy+}"
+  default = ""
 }
 
 variable "apigw_method_auth" {
