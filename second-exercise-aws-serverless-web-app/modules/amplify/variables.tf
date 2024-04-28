@@ -30,6 +30,18 @@ variable "amplify_enable_branch_auto_build" {
   default = true
 }
 
+variable "amplify_enable_branch_auto_creation" {
+  description = "Enable or disable auto branch creation"
+  type = bool
+  default = true
+}
+
+variable "amplify_branch_auto_creation_pattern" {
+  description = "Pattern for branch auto creation"
+  type = list(string)
+  default = ["main"]
+}
+
 variable "amplify_tags" {
   description = "Value of the Amplify tags"
   type = map(string)

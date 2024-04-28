@@ -61,7 +61,7 @@ variable "lambda_concurrency" {
 variable "lambda_handler" {
   description = "Allow to set up handler function for lambda function, default main"
   type = string
-  default = "lambda_handler"
+  default = "lambda_function.lambda_handler"
 }
 
 variable "lambda_path" {
