@@ -47,37 +47,28 @@ resource "aws_iam_role" "iam_role_lamda" {
 }
 
 data "aws_iam_policy_document" "lambda_statements" {
-#  statement {
-#    effect = "Allow"
-#
-#    actions = [
-#      "logs:CreateLogGroup",
-#      "logs:CreateLogStream",
-#      "logs:PutLogEvents",
-#    ]
-#
-#    resources = ["arn:aws:logs:*:*:*"]
-#  }
-#
-#  statement {
-#    actions = [
-#      "dynamodb:PutItem",
-#      "dynamodb:DeleteItem",
-#      "dynamodb:GetItem",
-#      "dynamodb:Scan",
-#      "dynamodb:Query",
-#      "dynamodb:UpdateItem"
-#    ]
-#    effect    = "Allow"
-#    resources = [var.dynamodb_arn]
-#  }
-
-  dynamic "statement" {
+dynamic "statement" {
     for_each = local.policies
     content {
+      sid = can(statement.value["sid"]) ? statement.value["sid"] : null
       actions   = statement.value["actions"]
       effect    = statement.value["effect"]
       resources = statement.value["resources"]
+      dynamic "condition" {
+        for_each = can(statement.value["condition"]) ? statement.value["condition"] : {}
+        content {
+          test     = statement.value["condition"]["test"]
+          values   = statement.value["condition"]["values"]
+          variable = statement.value["condition"]["variable"]
+        }
+      }
+      dynamic "principals" {
+        for_each = can(statement.value["principals"]) ? statement.value["principals"] : {}
+        content {
+          type = statement.value["principals"]["type"]
+          identifiers = statement.value["principals"]["identifiers"]
+        }
+      }
     }
   }
   depends_on = [var.dynamodb_arn]
