@@ -11,13 +11,13 @@ terraform {
 
 resource "aws_dynamodb_table" "web_app" {
   name = "${var.dynamodb_name}Tf"
-  hash_key = "ID"
-  read_capacity = 1
-  write_capacity = 1
+  hash_key = var.default_hash_key
+  read_capacity = var.read_capacity
+  write_capacity = var.write_capacity
 
   attribute {
-    name = "ID"
-    type = "S"
+    name = var.default_hash_key
+    type = var.default_hash_key_type
   }
 
   dynamic "attribute" {
@@ -27,4 +27,8 @@ resource "aws_dynamodb_table" "web_app" {
       type = attribute.value["type"]
 }
   }
+
+  tags = merge(var.tags, {
+    DeployTime = timestamp()
+  })
 }

@@ -13,13 +13,13 @@ variable "git_repo_name" {
 variable "git_access_token" {}
 
 variable "amplify_env" {
-  description = "Value of the Amplify env var for variable ENV"
+  description = "Value of the Amplify environment variable for variable ENV"
   type = string
   default = "dev"
 }
 
 variable "amplify_api_gw_address" {
-  description = "Value of the Amplify env var for variable API_GW_ADDRESS"
+  description = "Value of the Amplify environment variable for variable API_GW_ADDRESS"
   type = string
   default = ""
 }
@@ -42,10 +42,11 @@ variable "amplify_branch_auto_creation_pattern" {
   default = ["main"]
 }
 
-variable "amplify_tags" {
-  description = "Value of the Amplify tags"
+variable "tags" {
+  description = "Value of the tags"
   type = map(string)
   default = {
     ENV = "Dev"
+    PROJECT = "TF-Vertice-MZ"
   }
 }
