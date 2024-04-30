@@ -9,6 +9,10 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
+############################################
+#              Amplify App                 #
+############################################
+
 resource "aws_amplify_app" "web_app" {
   name = "${var.amplify_name_prefix}Tf"
   repository = var.git_repo_name
@@ -25,6 +29,10 @@ resource "aws_amplify_app" "web_app" {
   })
   depends_on = [var.amplify_api_gw_address]
 }
+
+############################################
+#     Adding GH Branch to Amplify App      #
+############################################
 
 resource "aws_amplify_branch" "web_app" {
   app_id      = aws_amplify_app.web_app.id

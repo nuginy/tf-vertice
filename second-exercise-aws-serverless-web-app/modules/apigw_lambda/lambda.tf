@@ -27,6 +27,10 @@ locals {
   policies = concat(local.default_policies, var.lambda_policies)
 }
 
+############################################
+#           Lambda Policies                #
+############################################
+
 resource "aws_iam_role" "iam_role_lamda" {
   name_prefix        = "${var.lambda_name}TfRole"
   assume_role_policy = jsonencode({
@@ -55,18 +59,18 @@ dynamic "statement" {
       effect    = statement.value["effect"]
       resources = statement.value["resources"]
       dynamic "condition" {
-        for_each = can(statement.value["condition"]) ? statement.value["condition"] : {}
+        for_each = can(statement.value["condition"]) ? toset(statement.value["condition"]) : []
         content {
-          test     = statement.value["condition"]["test"]
-          values   = statement.value["condition"]["values"]
-          variable = statement.value["condition"]["variable"]
+          test     = condition.value["test"]
+          values   = condition.value["values"]
+          variable = condition.value["variable"]
         }
       }
       dynamic "principals" {
-        for_each = can(statement.value["principals"]) ? statement.value["principals"] : {}
+        for_each = can(statement.value["principals"]) ? toset(statement.value["principals"]) : []
         content {
-          type = statement.value["principals"]["type"]
-          identifiers = statement.value["principals"]["identifiers"]
+          type = principals.value["type"]
+          identifiers = principals.value["identifiers"]
         }
       }
     }
@@ -80,6 +84,9 @@ resource "aws_iam_role_policy" "lambda_policy" {
   depends_on = [data.aws_iam_policy_document.lambda_statements]
 }
 
+############################################
+#           Lambda Function                #
+############################################
 
 data "archive_file" "zip_file" {
   type        = "zip"
@@ -88,14 +95,6 @@ data "archive_file" "zip_file" {
     content  = file(var.lambda_path)
     filename = "lambda_function.py"
   }
-}
-
-resource "aws_cloudwatch_log_group" "lambda_function" {
-  name              = "/aws/lambda/${var.lambda_name}"
-  retention_in_days = 1
-  tags = merge(var.tags, {
-    DeployTime = timestamp()
-  })
 }
 
 resource "aws_lambda_function" "lambda_function" {
@@ -116,6 +115,22 @@ resource "aws_lambda_function" "lambda_function" {
     DeployTime = timestamp()
   })
 }
+
+############################################
+#        Lambda Function Log Group         #
+############################################
+
+resource "aws_cloudwatch_log_group" "lambda_function" {
+  name              = "/aws/lambda/${var.lambda_name}"
+  retention_in_days = 1
+  tags = merge(var.tags, {
+    DeployTime = timestamp()
+  })
+}
+
+############################################
+#   Lambda Invoke Permission for Api Gw    #
+############################################
 
 resource "aws_lambda_permission" "lambda_invoke" {
   statement_id  = "InvokePermissionFromApiGw"

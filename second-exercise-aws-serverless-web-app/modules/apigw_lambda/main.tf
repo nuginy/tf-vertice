@@ -9,6 +9,10 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
+############################################
+#     Imported module for enabling CORS    #
+############################################
+
 module "cors" {
   source  = "squidfunk/api-gateway-enable-cors/aws"
   version = "0.3.3"
@@ -17,6 +21,10 @@ module "cors" {
   api_resource_id = aws_api_gateway_rest_api.web_app.root_resource_id
   allow_methods   = ["POST", "OPTIONS"]
 }
+
+############################################
+#               Rest API GW                #
+############################################
 
 resource "aws_api_gateway_rest_api" "web_app" {
   name = "${var.apigw_name_prefix}Tf"
@@ -35,6 +43,10 @@ resource "aws_api_gateway_method" "post" {
   rest_api_id   = aws_api_gateway_rest_api.web_app.id
   depends_on    = [aws_api_gateway_rest_api.web_app]
 }
+
+############################################
+#  Api Gw Integration and Method response  #
+############################################
 
 resource "aws_api_gateway_method_response" "post" {
   http_method     = aws_api_gateway_method.post.http_method
@@ -61,6 +73,10 @@ resource "aws_api_gateway_integration_response" "post" {
   depends_on = [aws_api_gateway_method.post, aws_api_gateway_integration.lambda]
 }
 
+############################################
+#   Rest Api Gw Integration with Lambda    #
+############################################
+
 resource "aws_api_gateway_integration" "lambda" {
   http_method             = aws_api_gateway_method.post.http_method
   resource_id             = aws_api_gateway_rest_api.web_app.root_resource_id
@@ -71,10 +87,18 @@ resource "aws_api_gateway_integration" "lambda" {
   depends_on              = [aws_api_gateway_method.post, aws_lambda_function.lambda_function]
 }
 
+############################################
+#           Rest Api Gw Deployment         #
+############################################
+
 resource "aws_api_gateway_deployment" "web_app" {
   rest_api_id = aws_api_gateway_rest_api.web_app.id
   depends_on  = [aws_api_gateway_method.post, aws_api_gateway_integration.lambda]
 }
+
+############################################
+#            Rest Api Gw Stage             #
+############################################
 
 resource "aws_api_gateway_stage" "web_app" {
   deployment_id = aws_api_gateway_deployment.web_app.id

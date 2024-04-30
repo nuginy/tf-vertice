@@ -9,6 +9,10 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
+############################################
+#             DynamoDB Table               #
+############################################
+
 resource "aws_dynamodb_table" "web_app" {
   name = "${var.dynamodb_name}Tf"
   hash_key = var.default_hash_key
