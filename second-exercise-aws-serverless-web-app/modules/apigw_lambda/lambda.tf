@@ -2,14 +2,18 @@ locals {
   default_policies = [
     {
       effect = "Allow"
-
       actions = [
-        "logs:CreateLogGroup",
+        "logs:CreateLogGroup"
+      ]
+      resources = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+    },
+    {
+      effect = "Allow"
+      actions = [
         "logs:CreateLogStream",
         "logs:PutLogEvents",
       ]
-
-      resources = ["arn:aws:logs:*:*:*"]
+      resources = ["${aws_cloudwatch_log_group.lambda_function.arn}:*"]
     },
     {
       actions = [
@@ -26,6 +30,13 @@ locals {
   ]
   policies = concat(local.default_policies, var.lambda_policies)
 }
+
+############################################
+#          Fetched data from AWS           #
+############################################
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 ############################################
 #           Lambda Policies                #
